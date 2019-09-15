@@ -6,6 +6,10 @@ import shutil
 import pickle
 import os
 import multiprocessing
+import pdftotext
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import AffinityPropagation
+import numpy as np
 
 from .section import SectionManager
 
@@ -130,3 +134,39 @@ class DocumentManager:
 
     def get_rm_list(self):
         return self._rm_list
+
+    def find_similarities(self, section_title):
+        section_list = list()
+        for rm in self._rm_list: # [0:10]:  # TEST mode
+            found = False
+            for s in rm.sections.get_section_list():
+                if s.title == section_title:  # TODO: Regex?
+                    if found:
+                        print('ERROR: Section {} found multiple times in document {}'.format(section_title, rm.path))
+                    section_list.append(s)
+                    found = True
+            if not found:
+                section_list.append(None)
+                print('ERROR: Section {} not found in document {}'.format(section_title, rm.path))
+        text_list = list()
+        text_list_len = list()
+        for s in section_list:
+            if s is None:
+                text_list.append('')
+                text_list_len.append(0)
+            else:
+                pdf = pdftotext.PDF(open(s.path, "rb"))
+                text_list.append('\n\n'.join(pdf))
+                text_list_len.append(len(pdf))
+        # https://stackoverflow.com/questions/8897593/how-to-compute-the-similarity-between-two-text-documents#24129170
+        vect = TfidfVectorizer(min_df=1, stop_words="english")
+        tfidf = vect.fit_transform(text_list)
+        pairwise_similarity = tfidf * tfidf.T
+
+        clustering = AffinityPropagation().fit_predict(pairwise_similarity)
+        for group in range(0, max(clustering) + 1):
+            print('Similar {} peripherals: '.format(section_title))
+            for index in range(0, len(clustering)):
+                if clustering[index] == group:
+                    print('\t[{:2d}] {}, {:3d}S: {}'.format(index, self._rm_list[index].title, text_list_len[index],self._rm_list[index].description))
+        print('\n')
