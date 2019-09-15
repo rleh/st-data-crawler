@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Compare ST Reference Manuals</title>
+    <style type="text/css">
+        body {
+            font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+        }
+        html, body {
+            height: 100%;
+        }
+        main {
+            height: 100%;
+        }
+        header {
+            background-color: #3f51b5;
+            color: #fff;
+            padding: 0;
+        }
+        table {
+            width: 100%;
+            height: 100%;
+	        margin: auto;
+        }
+        td {
+            width: 50%;
+        }
+        iframe, .pdfobj {
+            width: 99%;
+            height: 97vh;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+<main>
+    <table>
+        <tr>
+            <td>
+                <!-- <iframe id="pdf1" src="../.stdata/data/documents/RM0440.pdf.ADC.pdf"></iframe> -->
+                <object class="pdfobj" data="../.stdata/data/documents/RM0440.pdf.ADC.pdf" id="pdf1" type="application/pdf"></object>
+            </td>
+            <td>
+                <object class="pdfobj" data="../.stdata/data/documents/RM0438.pdf.ADC.pdf" id="pdf2" type="application/pdf"></object>
+                <!-- <iframe id="pdf2" src="../.stdata/data/documents/RM0438.pdf.ADC.pdf"></iframe> -->
+            </td>
+        </tr>
+    </table>
+</main>
+
+<script type="text/javascript">
+    $("#pdf1").on('load', function(){
+        $("#pdf1").contents().find("#viewerContainer").on('scroll', function () {
+            $("#pdf2").contents().find("#viewerContainer").scrollTop($(this).scrollTop());
+        });
+    });
+    $("#pdf2").on('load', function () {
+        $("#pdf2").contents().find("#viewerContainer").on('scroll', function () {
+            $("#pdf1").contents().find("#viewerContainer").scrollTop($(this).scrollTop());
+        });
+    });
+</script>
+
+</body>
+</html>
